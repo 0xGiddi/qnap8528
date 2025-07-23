@@ -269,7 +269,11 @@ Some devices (such as the *TS-473A*) blink the green disk slot LED to indicate t
 
 The following table lists all devices that have a valid configuration in the module and should
 work out-of-the-box. If you cannot find your model here, it either does not yet have a configuration entry
-or does not use the IT8528 chip. Please check the Q&A for more information.
+or does not use the IT8528 chip. Please check the Q&A for more information. 
+
+Note that some models that have "extra letters" these extra letters are not listed in this list
+under the model name column if they are not reflected in the configuration under `MODEL_NAME` or `DISPLAY_FIXED_MODEL_NAME`,
+the driver may still work fine detecting it as the base model without the extra letters. 
 
 |Model Name|MB Code|BP Code|Disk LEDs|Notes
 |-|-|-|-|-|
