@@ -5,8 +5,8 @@
   - [Installing on TrueNAS Scale](#installing-on-truenas-scale)
     - [Install Procedure](#install-procedure)
     - [Uninstall procedure](#uninstall-procedure)
-  - [Installing on fnOS (Feiniu OS / 飞牛 OS)](#installing-on-fnos-feiniu-os--%E9%A3%9E%E7%89%9B-os)
-  - [Autoload module on startup with modprobe](#autoload-module-on-startup-with-modprobe)
+  - [Installing on fnOS (Feiniu OS / 飞牛 OS)](#installing-on-fnos-feiniu-os--飞牛-os)
+  - [Autoload module on startup with Modprobe](#autoload-module-on-startup-with-modprobe)
   - [Autoload module on startup with Systemd](#autoload-module-on-startup-with-systemd)
   - [Removing the module](#removing-the-module)
 - [How to use this module](#how-to-use-this-module)
@@ -370,6 +370,11 @@ TS-1264U|Q08R0|Q08X0|12/12 | ⚠️ See *2
 |TS-453BE|QY472|QY580|4/4 | ⚠️ See 2
 |TS-653B|QY471|QY590|6/6 | ⚠️ See 2
 |TS-253B|QY470|QY570|2/2 |
+|TS-1277XU|QZ492|QZ552|12/12 |
+|TS-877XU|QZ490|QZ560|8/8 |
+|TS-1677XU|QZ492|QZ540|16/16 |
+|TS-2477XU|QZ503|Q0070|24/24 |
+|TS-977XU|QZ482|Q0060|9/9 |
 
 *1 Some or all disks LEDs are managed by other hardware (not the EC), if the model is missing 2 disks (e.g `8/10`), it's most likely the internal M.2/NVME ports that do not have an LED associated with them.\
 *2 Some or all of the disks do not have a present or error (green/red) LED.\

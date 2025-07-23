@@ -28,6 +28,7 @@
  *  v1.3: Changed VPD entries to return an error if BP does not exist
  *		  Changed configuration search logic to support devices with MB code only
  *		  Added configuration for TS-464eU
+ *  v1.9: Added TS-1277XU, TS-877XU, TS-1677XU, TS-2477XU, TS-977XU
  */
 
 #include <linux/delay.h>
@@ -1244,7 +1245,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.8");
+MODULE_VERSION("1.9");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
