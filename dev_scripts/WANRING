@@ -1,0 +1,1 @@
+generate config scripts may skip modesl even if MB/BP codes differ. This is a kown bug. Output should be checked against model config files
