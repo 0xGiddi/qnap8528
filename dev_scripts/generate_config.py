@@ -237,7 +237,8 @@ if __name__ == "__main__":
             # Check if the model already exists in the list
             model_exists = False
             for em in models:
-                if em.model_name == m.model_name:
+                if (em.model_name == m.model_name and em.mb_code == m.mb_code and em.bp_code == m.bp_code):
+                #if em.model_name == m.model_name:
                     # If the model exists, compare with the existing model
                     if not compare_qnap_configs(em, m):
                         model_exists = True  # If they are the same, we don't need to append
