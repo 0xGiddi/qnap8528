@@ -29,6 +29,8 @@
  *		  Changed configuration search logic to support devices with MB code only
  *		  Added configuration for TS-464eU
  *  v1.9: Added TS-1277XU, TS-877XU, TS-1677XU, TS-2477XU, TS-977XU
+ *  v1.10: Added more configs for TBS-464, TS-262, TS-262C, TS-264, 
+ *		   TS-264C, TS-364, TS-462, TS-462C, TS-464, TS-564, TS-664
  */
 
 #include <linux/delay.h>
@@ -1245,7 +1247,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.9");
+MODULE_VERSION("1.10");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
