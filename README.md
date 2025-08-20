@@ -408,11 +408,20 @@ TS-1264U|Q08R0|Q08X0|12/12 | ⚠️ See *2
 |TS-264|Q07R0|Q09N0|2/4 | ⚠️ See *1
 |TS-262C|SAQ90|SBQ10|2/2 |
 |TS-262|Q07R3|Q09N0|2/4 | ⚠️ See *1
+|TS-453A|QX850|QX670|4/4 | ⚠️ See *4
+|TS-853A|QX470|QX520|8/8 |
+|TS-253A|QX960|QY010|2/2 |
+|TBS-453A|QX910|N/A|4/4 |
+|TS-453MINI II|QX580|N/A|4/4 |
+|TS-653A|QX470|QX660|6/6 |
+|TS-453A|QX471|QX670|4/4 |
+|TS-553AS|QX370|N/A|5/5 |
 
 
 *1 Some or all disks LEDs are managed by other hardware (not the EC), if the model is missing 2 disks (e.g `8/10`), it's most likely the internal M.2/NVME ports that do not have an LED associated with them.\
 *2 Some or all of the disks do not have a present or error (green/red) LED.\
 *3 This device config file contains a 3rd code number which is not checked or tested. Might hint at use of VPD table 3 and 4?
+*4 Device serial number can be either located in MB VPD or network card.
 
 ## Question and Answers
 
