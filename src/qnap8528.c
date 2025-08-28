@@ -33,6 +33,7 @@
  *		   TS-264C, TS-364, TS-462, TS-462C, TS-464, TS-564, TS-664
  *  v1.11: Added more configs for TS-253A, TS-453A, TBS-453A, TS-853A, 
  *         TS-453MINI II, TS-653A, TS-553AS
+ *  v1.12: Added TVS-473e, TVS-673e, TVS-873e support
  */
 
 #include <linux/delay.h>
@@ -1249,7 +1250,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.11");
+MODULE_VERSION("1.12");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
