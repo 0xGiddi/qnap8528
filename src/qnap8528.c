@@ -34,6 +34,7 @@
  *  v1.11: Added more configs for TS-253A, TS-453A, TBS-453A, TS-853A, 
  *         TS-453MINI II, TS-653A, TS-553AS
  *  v1.12: Added TVS-473e, TVS-673e, TVS-873e support
+ *  v1.13: Changed mappings of HDD leds for added devices in v1.12
  */
 
 #include <linux/delay.h>
@@ -1250,7 +1251,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.12");
+MODULE_VERSION("1.13");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
