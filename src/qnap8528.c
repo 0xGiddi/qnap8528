@@ -35,6 +35,7 @@
  *         TS-453MINI II, TS-653A, TS-553AS
  *  v1.12: Added TVS-473e, TVS-673e, TVS-873e support
  *  v1.13: Changed mappings of HDD leds for added devices in v1.12
+ *  v1.14: Fixed label at end of compound statement for GCC 10
  */
 
 #include <linux/delay.h>
@@ -1075,6 +1076,7 @@ static umode_t qnap8528_hwmon_is_visible(const void *data, enum hwmon_sensor_typ
 			}
 		}
 	default:
+		;
 	}
 	return mode;
 }
@@ -1092,6 +1094,7 @@ static int qnap8528_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
 		*val = qnap8528_fan_pwm_get(channel);
 		return 0;
 	default:
+		;
 	}
 	return -ENOTSUPP;
 }
@@ -1251,7 +1254,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.13");
+MODULE_VERSION("1.14");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
