@@ -371,7 +371,7 @@ TS-1264U|Q08R0|Q08X0|12/12 | ⚠️ See *2
 |TS-253D|Q05H0|QY570|2/2 |  ✅ Tested, thank you @Atomique13,@nader-eloshaiker; Requires `skip_hw_check`
 |TS-251D|Q04W1|QY570|2/2 |  
 |TS-653D|Q04O0|Q04N0|6/6 |  
-|TS-453D|Q04M0|QY581|4/4 | ⚠️ See 2
+|TS-453D|Q04M0|QY581|4/4 | ✅ Tested; thank you Andres R.; Requires `skip_hw_check`⚠️ See 2
 |TVS-951N|SAN30|SBN10|9/9|
 |TVS-951X|Q0090|Q00A0|9/9|✅ Tested
 |TS-451A|QX690|QX700|4/4 | ✅ Tested; thank you @kikakeule
