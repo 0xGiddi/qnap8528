@@ -3631,6 +3631,32 @@ static struct qnap8528_config qnap8528_configs[] = {
             { NULL }
         }
     },
+	{
+        "TS-877", "QZ140", "QZ220",
+        {
+            .pwr_recovery   = 1,
+            .eup_mode       = 1,
+            .led_brightness = 1,
+            .led_status     = 1,
+            .led_usb        = 1,
+            .led_ident      = 1,
+            .vpd_bp_table   = 1,
+        },
+        .fans = (u8[]){ 7, 8, 1, 2, 0},
+        .slots = (struct qnap8528_slot_config[]){
+                        { .name = "m2ssd1", .ec_index = 17, .has_present = 1, .has_active = 1, .has_error = 1, .has_locate = 1},
+                        { .name = "m2ssd2", .ec_index = 18, .has_present = 1, .has_active = 1, .has_error = 1, .has_locate = 1},
+                        { .name = "ssd1", .ec_index = 13, .has_present = 1, .has_active = 0, .has_error = 1, .has_locate = 1},
+                        { .name = "ssd2", .ec_index = 14, .has_present = 1, .has_active = 0, .has_error = 1, .has_locate = 1},
+                        { .name = "hdd1", .ec_index = 1, .has_present = 1, .has_active = 0, .has_error = 1, .has_locate = 1},
+                        { .name = "hdd2", .ec_index = 2, .has_present = 1, .has_active = 0, .has_error = 1, .has_locate = 1},
+                        { .name = "hdd3", .ec_index = 3, .has_present = 1, .has_active = 0, .has_error = 1, .has_locate = 1},
+                        { .name = "hdd4", .ec_index = 4, .has_present = 1, .has_active = 0, .has_error = 1, .has_locate = 1},
+                        { .name = "hdd5", .ec_index = 5, .has_present = 1, .has_active = 0, .has_error = 1, .has_locate = 1},
+                        { .name = "hdd6", .ec_index = 6, .has_present = 1, .has_active = 0, .has_error = 1, .has_locate = 1},
+            { NULL }
+        }
+    },
 	/* Here add models without BP code */
 	{
 		"TS-453BMINI", "QY600", "",
