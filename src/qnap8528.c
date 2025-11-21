@@ -37,6 +37,7 @@
  *  v1.13: Changed mappings of HDD leds for added devices in v1.12
  *  v1.14: Fixed label at end of compound statement for GCC 10
  *  v1.15: Added TS-473, TS-673, TS-873 configs
+ *  v1.15: Added TS-877
  */
 
 #include <linux/delay.h>
@@ -1255,7 +1256,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.15");
+MODULE_VERSION("1.16");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
