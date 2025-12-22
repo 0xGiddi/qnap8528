@@ -38,6 +38,7 @@
  *  v1.14: Fixed label at end of compound statement for GCC 10
  *  v1.15: Added TS-473, TS-673, TS-873 configs
  *  v1.15: Added TS-877
+ *  v1.17: Added TS-466C
  */
 
 #include <linux/delay.h>
@@ -1256,7 +1257,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.16");
+MODULE_VERSION("1.17");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);

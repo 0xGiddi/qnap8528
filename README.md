@@ -432,7 +432,7 @@ TS-1264U|Q08R0|Q08X0|12/12 | ⚠️ See *2
 |TS-673|QY031|QY050|8/8 |  
 |TS-473|QY031|QY040|6/6 |
 |TS-877|QZ140|QZ220|8/8 |
-
+|TS-466C|SAQ94|SBR00|6/6 | ⚠️ See 2
 
 *1 Some or all disks LEDs are managed by other hardware (not the EC), if the model is missing 2 disks (e.g `8/10`), it's most likely the internal M.2/NVME ports that do not have an LED associated with them.\
 *2 Some or all of the disks do not have a present or error (green/red) LED.\
