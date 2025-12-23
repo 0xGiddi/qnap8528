@@ -39,6 +39,7 @@
  *  v1.15: Added TS-473, TS-673, TS-873 configs
  *  v1.15: Added TS-877
  *  v1.17: Added TS-466C
+ *  v1.18: Added TES-1885U, TS-1886XU, TS-1886XU R2, TES-3085U
  */
 
 #include <linux/delay.h>
@@ -1257,7 +1258,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.17");
+MODULE_VERSION("1.18");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
