@@ -786,7 +786,8 @@ static struct qnap8528_config qnap8528_configs[] = {
 		}
 	},
 	{
-		"TS-1886XU R2", "Q0B50", "Q0950",
+		/* HACK HACK HACK: Removed trailing 0 on MB code */
+		"TS-1886XU R2", "Q0B5", "Q0950",
 		.features = {
 			.pwr_recovery   = 1,
 			.led_status     = 1,
