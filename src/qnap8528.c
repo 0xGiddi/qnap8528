@@ -958,9 +958,9 @@ static int qnap8528_temperature_get(unsigned int sensor)
 		reg = 0x600 + sensor;
 	else if (sensor >= 5 && sensor <= 7)		/* System temp unit */
 		reg = 0x5fd + sensor;
-	else if (sensor == 0x0a)					/* Only if redandnat power */
+	else if (sensor == 0x0a)					/* Only if redundant power */
 		reg = 0x659;
-	else if (sensor == 0x0b)					/* Only if redandnat power */
+	else if (sensor == 0x0b)					/* Only if redundant power */
 		reg = 0x65c;
 	else if (sensor >= 0xf && sensor <= 0x26)	/* Env temp unit */
 		reg = 0x5f7 + sensor;
