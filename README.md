@@ -343,7 +343,7 @@ the driver may still work fine detecting it as the base model without the extra 
 |TS-1685|QY380|QY390|22/22 |
 |TES-1685-SAS|QY380|QY390|22/22 |
 |TS-977XU|QZ480|Q0060|9/9 |
-|TS-1277XU|QZ490|QZ550|12/12 |
+|TS-1277XU|QZ490|QZ550| 12/12 (in testing: 8/12)  |✅ Tested, thank you @mmastrac, ⚠️ reported notes *1 *2 for disks 9-12. 
 |TS-877XU|QZ490|QZ551|8/8 |
 |TS-1677XU|QZ491|QZ540|16/16 |
 |TS-2477XU|QZ500|Q0070|24/24 |
