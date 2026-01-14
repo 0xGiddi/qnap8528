@@ -1,6 +1,6 @@
 # QNAP8528 Example Scripts
 
-**Note:** These scripts are provided as examples based on my personal use. They may not be fully tested and could contain bugs. Use them at your own risk. I hope they’re helpful, but I cannot take responsibility for any damage or data loss that may occur. 
+**Note:** These scripts are provided as examples based on my personal use. They may not be fully tested and could (and probably do) contain bugs. Use them at your own risk. I hope they’re helpful, but I cannot take responsibility for any damage or data loss that may occur. 
 
 ---
 
@@ -211,4 +211,4 @@ RemainAfterExit=yes
 [Install]
 WantedBy=halt.target reboot.target shutdown.target
 ```
-This will set the status LED to blink red and green in an alternating pattern when system goes down for a reboot or shutdown (similar to how the GRUB module sets the pattern on boot). 
+This will set the status LED to blink red and green in an alternating pattern when system goes down for a reboot or shutdown (similar to how the GRUB module sets the pattern on boot). It will not override a warning/error LED state.  
