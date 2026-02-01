@@ -212,3 +212,76 @@ RemainAfterExit=yes
 WantedBy=halt.target reboot.target shutdown.target
 ```
 This will set the status LED to blink red and green in an alternating pattern when system goes down for a reboot or shutdown (similar to how the GRUB module sets the pattern on boot). It will not override a warning/error LED state.  
+
+### Fan Control
+To have automatic fan control based on system temperatures, `fancontrol` from the `lm-sensors` package can be used. This tool allows you to create a configuration file that defines how the fans should respond to temperature changes.
+
+1. **Install lm-sensors and fancontrol**:
+
+	```bash
+	apt-get install lm-sensors fancontrol
+	```
+2. **Setup required sensor drivers**:
+
+	Make sure the qnap8528 module is loaded:
+	```bash
+	modprobe qnap8528
+	```
+	I also recommend using the `drivetemp` module so fan control can be based on drive temperatures:
+	```bash
+	modprobe drivetemp
+	```
+
+3. **Configure fancontrol**:
+
+	EC has a delay when reporting new fan speeds due to spin down/up times, this causes `pwmconfig` to not detect fan speed changes properly at the setup phase, so we need to create a custom version of the script with longer delays.
+
+	Look for the `DELAY` and `PDELAY` variables and adjust their values as needed (I recommend setting them to 30 seconds, this makes the setup take much longer, but it's only run once and more accurate).
+
+	 ```bash
+	cp $(which pwmconfig) /usr/local/bin/pwmconfig.custom
+	vi /usr/local/bin/pwmconfig.custom # Edit the file, save and exit
+	```
+
+4. **Run pwmconfig**:
+
+	After creating the custom script, you can run it to generate the initial configuration for `fancontrol`:
+	```bash
+	/usr/local/bin/pwmconfig.custom
+	```
+	Follow the prompts to configure the fan settings.
+
+	Notes from experience on a TS-473A:
+	- I used the `k10temp` driver for CPU temperature monitoring to control the CPU fan.
+	- I added the `drivetemp` module for monitoring HDD temperatures, unfortunately `fancontrol` can only take a temperature reading from the one drive, I check over time what is the hottest drive and used that for fan control (it was only hotter by 1-2 degrees).
+	- The HDD fan does not start reliably at a PWM value below 30, I set 40 as the minimum PWM start value.
+
+4. **Start fancontrol and enable at boot**:
+	Once configured, you can start the `fancontrol` service manually:
+	```bash
+	systemctl start fancontrol
+	```
+	Once started, `sensors` can be used to see if the fan speeds are responding to temperature changes, I used `stress-ng` to check that CPU fan ramped up under load.
+y
+	To ensure `fancontrol` starts at boot, run:
+	```bash
+	systemctl enable --now fancontrol
+	```
+	You also need to make sure that the qnap8528 module is loaded before fancontrol starts. You can do this by creating a systemd service override, if using `qnap8528-load-module.service` from the module install process:
+	```
+	systemctl edit fancontrol
+	```
+	This will open a text editor where you can add the following lines:
+	```ini
+	[Unit]
+	After=qnap8528-load-module.service
+	Requires=qnap8528-load-module.service
+	```
+
+	Save and exit the editor. This override will ensure that the qnap8528 module is loaded before the fancontrol service starts.
+
+	Reload the systemd manager configuration and check if the changes took effect:
+	```bash
+	systemctl daemon-reload
+	systemctl list-dependencies fancontrol # qnap8528-load-module.service should be listed
+	```
