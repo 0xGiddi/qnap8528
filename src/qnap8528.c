@@ -40,6 +40,13 @@
  *  v1.15: Added TS-877
  *  v1.17: Added TS-466C
  *  v1.18: Added TES-1885U, TS-1886XU, TS-1886XU R2, TES-3085U
+ *  v1.19: Added strip_dashes_n helper.
+ *		   Changed MB/BP code returned for config search to not include dashes.
+ *		   Added default return value for blink_bicolor_store.
+ *		   Fixed qnap8528_hwmon_read to check return value of qnap8528_ec_read before using data.
+ *		   Removed dead code at qnap8528_power_recovery_attr_store.
+ *		   added break in qnap8528_hwmon_is_visible before default case for future proofing.
+ *		   Added BA-400, BA-600, BA-800 configs
  */
 
 #include <linux/delay.h>
@@ -377,7 +384,7 @@ static ssize_t qnap8528_power_recovery_attr_store(struct device *dev, struct dev
 		return ret;
 
 	/* Values are: 0 - Off, 1 - On, 2 - Last State */
-	if ((val < 0) || (val > 2))
+	if (val > 2)
 		return -ERANGE;
 
 	ret = qnap8528_ec_write(QNAP8528_PWR_RECOVERY_REG, val);
@@ -500,7 +507,7 @@ static ssize_t qnap8528_vpd_parse(int type, int size, char *raw, char *buf)
 	switch (type) {
 	case 0: /* String */
 		strncpy(buf, raw, size);
-		buf[size + 1] = '\x0';
+		buf[size + 1] = '\x0'; // Size is the entry size, not the output buffer size.
 		ret =  size + 1;
 		break;
 	case 1: /* Number */
@@ -524,7 +531,7 @@ static ssize_t qnap8528_vpd_parse(int type, int size, char *raw, char *buf)
 
 static ssize_t blink_bicolor_store(struct device *dev, struct device_attribute *attr, const char *buf, size_t count)
 {
-	int ret;
+	int ret = -EINVAL;
 
 	if (count > 0)
 		ret = qnap8528_ec_write(QNAP8528_LED_STATUS_REG, 5);
@@ -1079,6 +1086,7 @@ static umode_t qnap8528_hwmon_is_visible(const void *data, enum hwmon_sensor_typ
 				}
 			}
 		}
+		break;
 	default:
 		;
 	}
@@ -1087,15 +1095,26 @@ static umode_t qnap8528_hwmon_is_visible(const void *data, enum hwmon_sensor_typ
 
 static int qnap8528_hwmon_read(struct device *dev, enum hwmon_sensor_types type, u32 attr, int channel, long *val)
 {
+	int ret;
+
 	switch (type) {
 	case hwmon_temp:
-		*val = qnap8528_temperature_get(channel) * 1000;
+		ret = qnap8528_temperature_get(channel);
+		if (ret < 0)
+			return ret;
+		*val = ret * 1000;
 		return 0;
 	case hwmon_fan:
-		*val = qnap8528_fan_rpm_get(channel);
+		ret = qnap8528_fan_rpm_get(channel);
+		if (ret < 0)
+			return ret;
+		*val = ret;
 		return 0;
 	case hwmon_pwm:
-		*val = qnap8528_fan_pwm_get(channel);
+		ret = qnap8528_fan_pwm_get(channel);
+		if (ret < 0)
+			return ret;
+		*val = ret;
 		return 0;
 	default:
 		;
@@ -1132,16 +1151,41 @@ static int qnap8528_register_hwmon(struct device *dev)
 	return 0;
 }
 
+static void strip_dashes_n(char *s, size_t maxlen)
+{
+	size_t r = 0;
+	size_t w = 0;
+
+	if (!s || !maxlen)
+		return;
+
+	while (r < maxlen && s[r]) {
+		if (s[r] != '-')
+			s[w++] = s[r];
+		r++;
+	}
+
+	if (w < maxlen)
+		s[w] = '\0';
+	else
+		s[maxlen - 1] = '\0';
+}
+
+
 static struct qnap8528_config *qnap8528_find_config(void)
 {
 	int i;
 	size_t bp_s_size;
-	char mb_model[QNAP8528_VPD_ENTRY_MAX + 1];
-	char bp_model[QNAP8528_VPD_ENTRY_MAX + 1];
+	char mb_model[QNAP8528_VPD_ENTRY_MAX + 1] = {0};
+	char bp_model[QNAP8528_VPD_ENTRY_MAX + 1] = {0};
 
 	qnap8528_vpd_attr_show(NULL, &(struct qnap8528_device_attribute){.vpd_entry = QNAP8528_VPD_MB_MODEL}, mb_model);
 	// CR: Should we really be doing this if there is no backplane table?
 	qnap8528_vpd_attr_show(NULL, &(struct qnap8528_device_attribute){.vpd_entry = QNAP8528_VPD_BP_MODEL}, bp_model);
+
+	// Strip dashes from codes, some models have an extra 0 at the end that is seperated by a dash
+	strip_dashes_n(mb_model, sizeof(mb_model));
+	strip_dashes_n(bp_model, sizeof(bp_model));
 
 	if (!strnlen(mb_model, 32))
 		return 0;
@@ -1258,7 +1302,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.18");
+MODULE_VERSION("1.19");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
