@@ -47,6 +47,7 @@
  *		   Removed dead code at qnap8528_power_recovery_attr_store.
  *		   added break in qnap8528_hwmon_is_visible before default case for future proofing.
  *		   Added BA-400, BA-600, BA-800 configs
+ *  v1.20: Fixed MB date VPD location
  */
 
 #include <linux/delay.h>
@@ -1302,7 +1303,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.19");
+MODULE_VERSION("1.20");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
