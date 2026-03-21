@@ -945,7 +945,11 @@ static int qnap8528_fan_pwm_set(unsigned int fan, u8 value)
 		return -EINVAL;
 	}
 
-	ret = qnap8528_ec_write(reg_a, 0x10);
+	/* Clear the override flag (reg_a) before setting duty (reg_b).
+	 * Writing 0x10 to reg_a locks the fan zone at 100% duty permanently
+	 * until the next EC power cycle. Writing 0x00 clears the override
+	 * and allows the duty register (reg_b) to take effect. */
+	ret = qnap8528_ec_write(reg_a, 0x00);
 	if (ret)
 		return ret;
 
