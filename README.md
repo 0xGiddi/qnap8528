@@ -42,8 +42,7 @@ The qnap8528 project is a kernel module for exposing the ITE8528 embedded contro
 
 Sounds amazing right? below are instruction to install and use this module for yourself! If you install this module, please be kind and run a few tests to verify that all the features are working properly and report back either by creating a new issue or emailing me at `qnap8528 [AT] giddi.net`.
 
-**Note**: QM2/expansion card are not supported currently (it seems that most of them are not controlled by the EC anyway), \
-Waiting on hardware for testing, contributions and research comments are welcome (issue: https://github.com/0xGiddi/qnap8528/issues/6)
+**Note**: QM2/expansion card are not supported by this module, check out [qnap-qm2](https://github.com/0xGiddi/qnap-qm2) module.
 
 ## Installation Instructions
 Before installing, please check the *Supported Models* table and see that your device is supported by this module, if your device is not yet supported, please check seethe Q&A for more information. The following instructions have been tested on *Debian 12 x64*.
