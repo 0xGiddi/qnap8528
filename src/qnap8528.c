@@ -48,6 +48,7 @@
  *		   added break in qnap8528_hwmon_is_visible before default case for future proofing.
  *		   Added BA-400, BA-600, BA-800 configs
  *  v1.20: Fixed MB date VPD location
+ *  v1.21: Added EC processing delay before mutex unlock 
  */
 
 #include <linux/delay.h>
@@ -299,6 +300,7 @@ static int qnap8528_ec_read(u16 command, u8 *data)
 
 
 ec_read_out:
+	udelay(50);
 	mutex_unlock(&qnap8528_ec_lock);
 	return ret;
 }
@@ -317,8 +319,8 @@ static int qnap8528_ec_write(u16 command, u8 data)
 		goto qnap8528_ec_read_out;
 
 	outb(data, QNAP8528_EC_DAT_PORT);
-
 qnap8528_ec_read_out:
+	udelay(50);
 	mutex_unlock(&qnap8528_ec_lock);
 	return ret;
 }
@@ -1303,7 +1305,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.20");
+MODULE_VERSION("1.21");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
