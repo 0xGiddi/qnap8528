@@ -49,6 +49,7 @@
  *		   Added BA-400, BA-600, BA-800 configs
  *  v1.20: Fixed MB date VPD location
  *  v1.21: Added EC processing delay before mutex unlock 
+	v1.22: Added TS-453B, TS-653B
  */
 
 #include <linux/delay.h>
@@ -1305,7 +1306,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.21");
+MODULE_VERSION("1.22");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
