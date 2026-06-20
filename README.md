@@ -321,7 +321,7 @@ the driver may still work fine detecting it as the base model without the extra 
 |TS-3088XU|Q06X0|Q06Y0|30/30 |
 |TS-973AX|Q0711|Q0760|9/9 |
 |TS-873A|Q07D0|Q07L0|10/10 |✅ Tested, Thank you @calypso
-|TS-673A|Q07D0|Q07M0|8/8 |🟩 Similar to TS-473A
+|TS-673A|Q07D0|Q07M0|8/8 |✅ Tested, Thank you @IT-Ralph
 |TS-473A|Q07D0|Q07N0|6/6 |  ✅ Tested, by me. 
 |TS-1655|Q07Z1|Q08G0|18/18 |
 |TS-2287XU|Q0840|Q08A0|22/22 |
