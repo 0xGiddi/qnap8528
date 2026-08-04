@@ -50,7 +50,7 @@ Before installing, please check the *Supported Models* table and see that your d
 **Disclaimer:** This kernel module is provided as-is, without any warranty of functionality or fitness for a specific purpose. The developers of this kernel module accept no liability for any damage, data loss, or system instability resulting from its use, Use at your own risk .
 ### Install instructions using DKMS
 
-> **_⚠️ TR-464/TR-464xx/TS-253D Users:_**  It seems the device uses an ENE EC which does not return the correct chip ID, `skip_hw_check` needs to be set to true (`insmod qnap8528.ko skip_hw_check=true`), also, add this at the end of `ExecStart` in the service unit file.
+> **_⚠️ TR-464/TR-464xx/TS-253D/Qu-X05 Users:_**  It seems the device uses an ENE EC which does not return the correct chip ID, `skip_hw_check` needs to be set to true (`insmod qnap8528.ko skip_hw_check=true`), also, add this at the end of `ExecStart` in the service unit file.
 
 1. Download the latest release of the module from the [releases page](https://github.com/0xGiddi/tsx73a-ec/releases/latest) or clone the repository locally using `git clone https://github.com/0xgiddi/qnap8528.git`
 2. Extract the zip/tarball using `unzip <file>`, `tar xzf <file>`
@@ -440,6 +440,7 @@ TS-1264U|Q08R0|Q08X0|12/12 | ⚠️ See *2
 |BA-800|B6493|Q0AA0|10/10 |
 |BA-400|Q0BB1|Q0BL0|6/6 |
 |BA-600|B6493|Q0BK0|8/8 |
+|Qu605|SA1450|SB1360|4/8| ⚠️ See 2
 
 *1 Some or all disks LEDs are managed by other hardware (not the EC), if the model is missing 2 disks (e.g `8/10`), it's most likely the internal M.2/NVME ports that do not have an LED associated with them.\
 *2 Some or all of the disks do not have a present or error (green/red) LED.\
