@@ -144,7 +144,7 @@ struct qnap8528_features {
 	u32 led_jbod:1;
 	u32 led_ident:1;
 	u32 enc_serial_mb:1;
-	u32 vpd_bp_table:1;
+	u32 vpd_bp_table:2;
 };
 
 /*
