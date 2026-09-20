@@ -134,8 +134,8 @@ verify_gcc() {
 compile_driver() {
     echo "🔨 开始编译内核模块..."
     docker exec -t "$CONTAINER_NAME" bash -c "
-        cd /driver && \\
-        make -C /usr/src/linux-headers M=\$PWD clean && \\
+        cd /driver && \
+        make -C /usr/src/linux-headers M=\$PWD clean && \
         make -C /usr/src/linux-headers M=\$PWD modules
     "
     if [ $? -ne 0 ]; then
