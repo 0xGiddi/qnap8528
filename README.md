@@ -37,6 +37,20 @@
 sudo ./build.sh  
 ```  
 
+### 无人值守模式（适合开机自启场景）  
+跳过所有交互提示，直接使用已有镜像编译安装：  
+```bash  
+sudo ./build.sh --auto  
+```  
+
+### 强制重建镜像（用于修复编译问题）  
+当镜像内 GCC 版本与当前内核不匹配等问题导致编译失败时，强制重建编译镜像：  
+```bash  
+sudo ./build.sh --rebuild  
+# 可与无人值守模式组合使用  
+sudo ./build.sh --auto --rebuild  
+```  
+
 ### 脚本自动执行流程  
 1. **启动 Docker 容器**：挂载 NAS 内核头文件及当前目录，构建隔离编译环境。  
 2. **编译驱动**：在容器内生成适用于当前 NAS 内核的 `qnap8528.ko` 模块。  
@@ -46,9 +60,36 @@ sudo ./build.sh
 6. **配置自启**：创建 Systemd 服务，确保驱动随系统启动自动加载。  
 
 
+## 🧩 飞牛 OS 升级后的 GCC 版本适配  
+飞牛 OS 系统升级后，内核及其编译工具链（GCC）版本可能随之变化。内核模块必须尽量使用与当前内核编译时一致的 GCC 版本编译，否则会出现**编译失败**或**模块无法加载**（vermagic 不匹配）的问题。  
+
+本版本 `build.sh` / `Dockerfile` 的改进：  
+1. **自动探测内核 GCC 版本**：`build.sh` 从 `/proc/version` 提取当前内核编译时使用的 GCC 版本，并通过 `--build-arg GCC_VERSION=...` 传给 Docker 镜像。  
+2. **按版本安装 GCC**：`Dockerfile` 优先安装与内核一致的 GCC 版本（阿里云镜像 → snapshot.debian.org → 默认版本，逐级兜底），并在编译前校验容器内 GCC 与内核 GCC 是否一致。  
+3. **失败自动重试**：配合开机自检脚本使用时，首次编译失败会自动以 `--rebuild` 强制重建镜像后重试。  
+
+> 若升级后提示 GCC 版本不匹配，可先手动执行 `sudo ./build.sh --rebuild` 重建一次镜像，再重新编译安装。  
+
+
+## 🚀 开机自检脚本（qnap8528-boot-check.sh）  
+`qnap8528-boot-check.sh` 用于开机时自动检查并恢复驱动状态：  
+- 通过 `/sys/module/qnap8528` 检查 `qnap8528` 内核模块是否已加载；  
+- 未加载时自动执行编译安装（失败会自动重建镜像重试），完成后重启 `coolcontrol` 容器。  
+
+**在飞牛 OS 中使用（推荐，配合应用中心「计划任务」）**：  
+1. 将 `qnap8528-boot-check.sh`、`build.sh`、`Dockerfile`、`src/` 放在同一目录（例如 `/vol00/RemovableDisk/qnap8528/`）；  
+2. 在飞牛 OS **应用中心**搜索并安装 **计划任务** 应用；  
+3. 打开「计划任务」，新建任务，触发方式选择 **系统开机** 事件；  
+4. 执行命令填写：  
+   ```bash  
+   bash /vol00/RemovableDisk/qnap8528/qnap8528-boot-check.sh  
+   ```  
+5. 保存后即可。以后每次系统更新或重启，开机时都会自动检查驱动：未加载时自动按最新内核重新编译安装，**无需手动干预**。  
+
+
 ## 💡 注意事项  
 - **内核升级后**：若 NAS 内核版本更新（通过 `uname -r` 确认），需重新运行 `sudo ./build.sh` 重新编译安装驱动。  
-- **特殊设备适配**：若设备为 **TS-464/TS-253D** 等非 ITE8528 芯片型号，可在脚本中添加参数 `skip_hw_check=true`（如 `sudo ./build.sh skip_hw_check=true`）。  
+- **特殊设备适配**：若设备为 **TS-464/TS-253D** 等非 ITE8528 芯片型号，加载模块时需添加 `skip_hw_check=true` 参数。可在编译安装后编辑 `/etc/systemd/system/qnap8528-load.service`，将 `ExecStart` 行改为 `/sbin/modprobe qnap8528 skip_hw_check=true`，然后执行 `sudo systemctl daemon-reload && sudo systemctl restart qnap8528-load.service`。  
 
 
 ## 🧪 功能验证  
