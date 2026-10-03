@@ -51,6 +51,8 @@
  *  v1.21: Added EC processing delay before mutex unlock 
  *  v1.22: Added TS-453B, TS-653B
  *  v1.23: Added Qu605 (by yuanl)
+ *  v1.25: Fix vpd_bp_table and VPD logic to support table > 1
+ *  v1.26: Added TS-551 config
  */
 
 #include <linux/delay.h>
@@ -458,7 +460,7 @@ static ssize_t qnap8528_vpd_attr_show(struct device *dev, struct qnap8528_device
 	if (dev)
 		data = dev_get_drvdata(dev);
 
-	if (data && (((entry >> 0x1a) & 3) == 1))
+	if (data && (((entry >> 0x1a) & 3) != 0))
 		if (!data->config->features.vpd_bp_table)
 			return -ENOTSUPP;
 
@@ -1307,7 +1309,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.24");
+MODULE_VERSION("1.26");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
