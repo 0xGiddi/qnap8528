@@ -316,7 +316,7 @@ the driver may still work fine detecting it as the base model without the extra 
 |TS-686|Q05S0|Q0660|8/8 |
 |TS-886|Q05S1|Q0650|10/10 |
 |TS-686|Q05S1|Q0660|8/8 |
-|TVS-1688X|Q05T0|Q0630|18/18 |
+|TVS-1688X|Q05T0|Q0630|18/18 ||✅ Tested, Thank you @an3k
 |TVS-1288X|Q05W0|Q05K0|14/14 |
 |TS-3088XU|Q06X0|Q06Y0|30/30 |
 |TS-973AX|Q0711|Q0760|9/9 |
