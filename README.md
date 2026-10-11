@@ -316,7 +316,7 @@ the driver may still work fine detecting it as the base model without the extra 
 |TS-686|Q05S0|Q0660|8/8 |
 |TS-886|Q05S1|Q0650|10/10 |
 |TS-686|Q05S1|Q0660|8/8 |
-|TVS-1688X|Q05T0|Q0630|18/18 |
+|TVS-1688X|Q05T0|Q0630|18/18 ||✅ Tested, Thank you @an3k
 |TVS-1288X|Q05W0|Q05K0|14/14 |
 |TS-3088XU|Q06X0|Q06Y0|30/30 |
 |TS-973AX|Q0711|Q0760|9/9 |
@@ -441,6 +441,7 @@ TS-1264U|Q08R0|Q08X0|12/12 | ⚠️ See *2
 |BA-400|Q0BB1|Q0BL0|6/6 |
 |BA-600|B6493|Q0BK0|8/8 |
 |Qu605|SA1450|SB1360|4/8| ⚠️ See 2
+|TS-551|SAJ30|SBK20|2/5| ⚠️ See *2, ✅ Tested; thank you @sunmy78-cloud
 
 *1 Some or all disks LEDs are managed by other hardware (not the EC), if the model is missing 2 disks (e.g `8/10`), it's most likely the internal M.2/NVME ports that do not have an LED associated with them.\
 *2 Some or all of the disks do not have a present or error (green/red) LED.\
