@@ -1,0 +1,32 @@
+# Optional: start only after the build/load app has created the QNAP sysfs device.
+services:
+  cooling:
+    image: python:3.13-slim
+    restart: unless-stopped
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    security_opt: [no-new-privileges:true]
+    entrypoint: ["python3", "-u", "/source/examples/truenas/fancontrol.py"]
+    environment:
+      QNAP_CPU_PWM: ${QNAP_CPU_PWM:?Set QNAP_CPU_PWM}
+      QNAP_CASE_PWMS: ${QNAP_CASE_PWMS:?Set QNAP_CASE_PWMS}
+      QNAP_FANS: ${QNAP_FANS:?Set QNAP_FANS}
+    volumes:
+      - ${QNAP_SOURCE_DIR:?Set QNAP_SOURCE_DIR}:/source:ro
+      - /sys:/hostsys:ro
+      - type: bind
+        source: /sys/devices/platform/qnap8528
+        target: /controller
+        bind:
+          create_host_path: false
+    tmpfs:
+      - /run:size=1m,mode=755
+    mem_limit: 128m
+    pids_limit: 32
+    stop_grace_period: 15s
+    healthcheck:
+      test: ["CMD", "python3", "-c", "import json,time; d=json.load(open('/run/fancontrol.json')); assert d['healthy'] and 0 <= time.time()-d['updated'] < 45"]
+      interval: 30s
+      timeout: 5s
+      start_period: 45s

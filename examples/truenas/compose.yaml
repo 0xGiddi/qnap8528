@@ -1,0 +1,33 @@
+services:
+  build:
+    image: debian:trixie-slim
+    restart: on-failure:3
+    security_opt: [no-new-privileges:true]
+    entrypoint: ["/bin/sh", "/source/examples/truenas/build-module.sh"]
+    volumes:
+      - ${QNAP_SOURCE_DIR:?Set QNAP_SOURCE_DIR}:/source:ro
+      - ${QNAP_OUTPUT_DIR:?Set QNAP_OUTPUT_DIR}:/output
+      - /usr/src:/usr/src:ro
+      - /lib/modules:/lib/modules:ro
+    tmpfs:
+      - /build:size=256m,mode=1777
+    mem_limit: 1g
+    cpus: 2
+    pids_limit: 256
+
+  load:
+    image: alpine:3.22
+    restart: on-failure:3
+    network_mode: none
+    read_only: true
+    cap_drop: [ALL]
+    cap_add: [SYS_MODULE]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 32
+    entrypoint: ["/bin/sh", "/source/examples/truenas/load-module.sh"]
+    depends_on:
+      build:
+        condition: service_completed_successfully
+    volumes:
+      - ${QNAP_SOURCE_DIR:?Set QNAP_SOURCE_DIR}:/source:ro
+      - ${QNAP_OUTPUT_DIR:?Set QNAP_OUTPUT_DIR}:/output:ro
