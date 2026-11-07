@@ -81,6 +81,26 @@ cooling behavior. The EC can take about 30 seconds to report a changed RPM.
 Replace any existing fixed-version module-loading startup task only after these
 checks pass. Do not run another fan-control daemon alongside this controller.
 
+### Start the complete app at boot
+
+Register a TrueNAS **Init/Shutdown Script** with **When = POSTINIT**, **Type =
+COMMAND**, and **Timeout = 600 seconds**. For an app named `qnap-hardware`, use:
+
+```sh
+/bin/sh /mnt/POOL/qnap8528/source/examples/truenas/start-app.sh qnap-hardware
+```
+
+TrueNAS can remove an app's containers when detaching its host-path datasets
+during shutdown. Docker restart policies cannot recreate removed containers.
+The POSTINIT task starts the entire Compose dependency chain, including the
+short-lived builder and module loader. The helper retries if Apps are still
+initializing. Disable the previous fixed-kernel startup command after verifying
+the replacement.
+
+Reboot the NAS and verify that the module, all expected tachometers and healthy
+cooling return without a manual app start. A successful app restart alone does
+not exercise this boot sequence.
+
 After a kernel update, the builder compiles a matching module from the same local
 source checkout. Changing to a reviewed source version also invalidates the
 source cache. Keep the source and output datasets mounted when Apps start.
