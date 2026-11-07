@@ -5,13 +5,12 @@ import json
 import logging
 import math
 import os
-from pathlib import Path
 import signal
 import time
-
+from pathlib import Path
 
 SYSFS = Path(os.environ.get("QNAP_SYSFS", "/hostsys"))
-PLATFORM = Path(os.environ.get("QNAP_PLATFORM", "/platform"))
+CONTROLLER = Path(os.environ.get("QNAP_CONTROLLER", "/controller"))
 CPU_PWM = int(os.environ["QNAP_CPU_PWM"])
 CASE_PWMS = [int(value) for value in os.environ["QNAP_CASE_PWMS"].split(",")]
 FANS = [int(value) for value in os.environ["QNAP_FANS"].split(",")]
@@ -28,7 +27,9 @@ def temperature(path):
 
 
 def curve(value, low, high, minimum):
-    return round(min(255, max(minimum, minimum + (255 - minimum) * (value - low) / (high - low))))
+    return round(
+        min(255, max(minimum, minimum + (255 - minimum) * (value - low) / (high - low)))
+    )
 
 
 def write_pwm(controller, channel, value):
@@ -48,43 +49,94 @@ def stop(_signum, _frame):
     stopping = True
 
 
-def main():
-    logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s")
-    signal.signal(signal.SIGTERM, stop)
-    signal.signal(signal.SIGINT, stop)
-    controller = next((PLATFORM / "qnap8528/hwmon").glob("hwmon*"))
-    full_speed(controller)
-    cpu = next(path / "temp1_input" for path in (SYSFS / "class/hwmon").glob("hwmon*")
-               if (path / "name").read_text().strip() in ("k10temp", "coretemp"))
-    # Keep the original paths so a disappearing drive sensor triggers full speed.
+def validate_channels():
+    if (
+        not CASE_PWMS
+        or not FANS
+        or any(channel <= 0 for channel in [CPU_PWM, *CASE_PWMS, *FANS])
+    ):
+        raise ValueError(
+            "Configure positive CPU, chassis PWM and fan tachometer channels"
+        )
+    if (
+        CPU_PWM in CASE_PWMS
+        or len(set(CASE_PWMS)) != len(CASE_PWMS)
+        or len(set(FANS)) != len(FANS)
+    ):
+        raise ValueError(
+            "CPU/chassis PWM groups must be distinct; channel lists must not contain duplicates"
+        )
+
+
+def find_controller():
+    for attempt in range(30):
+        controller = next((CONTROLLER / "hwmon").glob("hwmon*"), None)
+        if controller is not None:
+            return controller
+        if stopping:
+            return None
+        if attempt < 29:
+            time.sleep(1)
+    raise RuntimeError(
+        f"QNAP hwmon device not found at {CONTROLLER}; load qnap8528 before starting cooling"
+    )
+
+
+def find_sensors():
+    cpu = None
     disks = []
     nvmes = []
     for path in (SYSFS / "class/hwmon").glob("hwmon*"):
         name = (path / "name").read_text().strip()
-        if name == "drivetemp":
+        if name in ("k10temp", "coretemp") and cpu is None:
+            cpu = path / "temp1_input"
+        elif name == "drivetemp":
             disks.append(path / "temp1_input")
         elif name == "nvme":
             nvmes.append(path / "temp1_input")
+    if cpu is None:
+        raise RuntimeError("No k10temp/coretemp CPU sensor found; full speed requested")
     if not disks:
-        full_speed(controller)
-        raise RuntimeError("No disk temperature sensors found")
+        raise RuntimeError("No drivetemp disk sensors found; full speed requested")
+    return cpu, disks, nvmes
 
-    previous = {}
-    warmup_until = time.monotonic() + 30
-    last_log = 0
+
+def main():
+    logging.basicConfig(
+        level=logging.INFO, format="%(asctime)s %(levelname)s %(message)s"
+    )
+    signal.signal(signal.SIGTERM, stop)
+    signal.signal(signal.SIGINT, stop)
+    validate_channels()
+    controller = find_controller()
+    if controller is None:
+        return
+    full_speed(controller)
     try:
+        # Keep these paths so a disappearing sensor triggers full speed.
+        cpu, disks, nvmes = find_sensors()
+        previous = {}
+        warmup_until = time.monotonic() + 30
+        last_log = 0
         while not stopping:
             healthy = False
             readings = {}
             try:
-                readings = {"cpu": temperature(cpu),
-                            "disk": max(temperature(path) for path in disks),
-                            "nvme": max((temperature(path) for path in nvmes), default=0)}
+                readings = {
+                    "cpu": temperature(cpu),
+                    "disk": max(temperature(path) for path in disks),
+                    "nvme": max((temperature(path) for path in nvmes), default=0),
+                }
                 cpu_duty = curve(readings["cpu"], 45, 75, 102)
-                case_duty = max(curve(readings["disk"], 35, 50, 115),
-                                curve(readings["nvme"], 50, 70, 115),
-                                curve(readings["cpu"], 60, 80, 115))
-                speeds = {channel: int((controller / f"fan{channel}_input").read_text()) for channel in FANS}
+                case_duty = max(
+                    curve(readings["disk"], 35, 50, 115),
+                    curve(readings["nvme"], 50, 70, 115),
+                    curve(readings["cpu"], 60, 80, 115),
+                )
+                speeds = {
+                    channel: int((controller / f"fan{channel}_input").read_text())
+                    for channel in FANS
+                }
                 if time.monotonic() < warmup_until:
                     cpu_duty = case_duty = 255
                 elif any(speed <= 0 for speed in speeds.values()):
@@ -99,16 +151,24 @@ def main():
                         previous[channel] = requested
                 healthy = True
                 if time.monotonic() - last_log >= 60:
-                    logging.info("Temperatures=%s RPM=%s PWM=%s", readings, speeds, previous)
+                    logging.info(
+                        "Temperatures=%s RPM=%s PWM=%s", readings, speeds, previous
+                    )
                     last_log = time.monotonic()
             except (OSError, ValueError, RuntimeError):
                 logging.exception("Cooling check failed; requesting full fan speed")
                 full_speed(controller)
                 previous.clear()
             temporary_status = STATUS.with_suffix(".tmp")
-            temporary_status.write_text(json.dumps({
-                "updated": time.time(), "healthy": healthy, "temperatures": readings,
-            }))
+            temporary_status.write_text(
+                json.dumps(
+                    {
+                        "updated": time.time(),
+                        "healthy": healthy,
+                        "temperatures": readings,
+                    }
+                )
+            )
             temporary_status.replace(STATUS)
             for _ in range(INTERVAL):
                 if stopping:

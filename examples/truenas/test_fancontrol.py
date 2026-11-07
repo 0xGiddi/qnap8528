@@ -3,9 +3,9 @@
 import importlib.util
 import json
 import os
-from pathlib import Path
 import tempfile
 import unittest
+from pathlib import Path
 from unittest.mock import patch
 
 
@@ -27,10 +27,17 @@ class CoolingTests(unittest.TestCase):
             directory.mkdir(parents=True)
             (directory / "name").write_text(name)
             (directory / "temp1_input").write_text(str(temp))
-        env = {"QNAP_SYSFS": str(self.sysfs), "QNAP_PLATFORM": str(self.platform),
-               "QNAP_CPU_PWM": "7", "QNAP_CASE_PWMS": "1", "QNAP_FANS": "1,2,7",
-               "QNAP_STATUS": str(root / "status.json")}
-        spec = importlib.util.spec_from_file_location("cooling", Path(__file__).with_name("fancontrol.py"))
+        env = {
+            "QNAP_SYSFS": str(self.sysfs),
+            "QNAP_CONTROLLER": str(self.platform / "qnap8528"),
+            "QNAP_CPU_PWM": "7",
+            "QNAP_CASE_PWMS": "1",
+            "QNAP_FANS": "1,2,7",
+            "QNAP_STATUS": str(root / "status.json"),
+        }
+        spec = importlib.util.spec_from_file_location(
+            "cooling", Path(__file__).with_name("fancontrol.py")
+        )
         self.module = importlib.util.module_from_spec(spec)
         with patch.dict(os.environ, env):
             spec.loader.exec_module(self.module)
@@ -46,9 +53,11 @@ class CoolingTests(unittest.TestCase):
         def finish(_seconds):
             self.module.stopping = True
 
-        with patch.object(self.module, "write_pwm", side_effect=write), \
-             patch.object(self.module.time, "monotonic", side_effect=[0, 40, 100, 100]), \
-             patch.object(self.module.time, "sleep", side_effect=finish):
+        with (
+            patch.object(self.module, "write_pwm", side_effect=write),
+            patch.object(self.module.time, "monotonic", side_effect=[0, 40, 100, 100]),
+            patch.object(self.module.time, "sleep", side_effect=finish),
+        ):
             self.module.main()
         return writes, json.loads(self.module.STATUS.read_text())
 
@@ -82,6 +91,55 @@ class CoolingTests(unittest.TestCase):
         writes, status = self.run_once()
         self.assertFalse(status["healthy"])
         self.assertTrue(all(value == 255 for _, value in writes))
+
+    def test_missing_cpu_stops_startup_with_full_speed(self):
+        (self.sysfs / "class/hwmon/hwmon0/name").write_text("other")
+        with self.assertRaisesRegex(RuntimeError, "No k10temp/coretemp CPU sensor"):
+            self.module.main()
+        for channel in (1, 7):
+            self.assertEqual((self.controller / f"pwm{channel}").read_text(), "255")
+
+    def test_missing_disk_stops_startup_with_full_speed(self):
+        (self.sysfs / "class/hwmon/hwmon1/name").write_text("other")
+        with self.assertRaisesRegex(RuntimeError, "No drivetemp disk sensors"):
+            self.module.main()
+        for channel in (1, 7):
+            self.assertEqual((self.controller / f"pwm{channel}").read_text(), "255")
+
+    def test_waits_for_late_hwmon_device(self):
+        with (
+            patch.object(
+                Path, "glob", side_effect=[iter(()), iter(()), iter([self.controller])]
+            ),
+            patch.object(self.module.time, "sleep") as sleep,
+        ):
+            self.assertEqual(self.module.find_controller(), self.controller)
+        self.assertEqual(sleep.call_count, 2)
+
+    def test_missing_hwmon_has_bounded_wait_and_clear_error(self):
+        with (
+            patch.object(Path, "glob", side_effect=lambda *_: iter(())),
+            patch.object(self.module.time, "sleep") as sleep,
+            self.assertRaisesRegex(
+                RuntimeError, "load qnap8528 before starting cooling"
+            ),
+        ):
+            self.module.find_controller()
+        self.assertEqual(sleep.call_count, 29)
+
+    def test_rejects_ambiguous_and_invalid_channels(self):
+        for attribute, value in (
+            ("CASE_PWMS", [7]),
+            ("CASE_PWMS", [1, 1]),
+            ("FANS", [0]),
+            ("FANS", [1, 1]),
+        ):
+            with (
+                self.subTest(attribute=attribute, value=value),
+                patch.object(self.module, attribute, value),
+                self.assertRaises(ValueError),
+            ):
+                self.module.validate_channels()
 
 
 if __name__ == "__main__":

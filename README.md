@@ -67,8 +67,9 @@ Before installing, please check the *Supported Models* table and see that your d
 
 The [TrueNAS container example](examples/truenas/README.md) builds modules against
 the running host's headers and stores a verified build for each kernel version on
-a persistent dataset. It includes a loader and an optional temperature-based
-cooling example, tested on a TS-873A. Build tools run inside a container while the
+a persistent dataset. The build/load configuration works on its own; a separate,
+optional temperature-based cooling example is included, tested on a TS-873A.
+Build tools run inside a container while the
 host operating system stays read-only.
 
 #### Compiling using Kylian's Docker container

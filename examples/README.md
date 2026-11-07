@@ -4,6 +4,16 @@
 
 ---
 
+### TrueNAS SCALE module build/load and optional cooling
+
+The [TrueNAS container example](truenas/README.md) builds and verifies a module
+for the running host kernel without installing build tools on the host.
+`compose.yaml` provides build/load only, so it can be used with your existing
+fan-management solution. `compose.cooling.yaml` is an optional temperature-based
+controller with explicit model-specific channel assignments and fault handling.
+Its writable sysfs mount is restricted to the QNAP device, and startup ordering
+loads the driver before starting the optional cooling app.
+
 ### QNAP Disk LED Activity Monitor - qnap-disk-led-monitor.sh
 
 A Bash script to monitor disk I/O on QNAP devices and blink the corresponding drive LEDs in real time—for LEDs that do not blink automatically. Supports both standard sysfs block stats and `blktrace` for catching all disk activity, including small operations from SMART/drivetemp. 

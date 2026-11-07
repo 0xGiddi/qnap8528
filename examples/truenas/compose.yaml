@@ -2,6 +2,7 @@ services:
   build:
     image: debian:trixie-slim
     restart: on-failure:3
+    security_opt: [no-new-privileges:true]
     entrypoint: ["/bin/sh", "/source/examples/truenas/build-module.sh"]
     volumes:
       - ${QNAP_SOURCE_DIR:?Set QNAP_SOURCE_DIR}:/source:ro
@@ -12,6 +13,7 @@ services:
       - /build:size=256m,mode=1777
     mem_limit: 1g
     cpus: 2
+    pids_limit: 256
 
   load:
     image: alpine:3.22
@@ -20,6 +22,8 @@ services:
     read_only: true
     cap_drop: [ALL]
     cap_add: [SYS_MODULE]
+    security_opt: [no-new-privileges:true]
+    pids_limit: 32
     entrypoint: ["/bin/sh", "/source/examples/truenas/load-module.sh"]
     depends_on:
       build:
@@ -27,32 +31,3 @@ services:
     volumes:
       - ${QNAP_SOURCE_DIR:?Set QNAP_SOURCE_DIR}:/source:ro
       - ${QNAP_OUTPUT_DIR:?Set QNAP_OUTPUT_DIR}:/output:ro
-
-  cooling:
-    image: python:3.13-slim
-    restart: unless-stopped
-    network_mode: none
-    read_only: true
-    cap_drop: [ALL]
-    entrypoint: ["python3", "-u", "/source/examples/truenas/fancontrol.py"]
-    environment:
-      QNAP_CPU_PWM: ${QNAP_CPU_PWM:?Set QNAP_CPU_PWM}
-      QNAP_CASE_PWMS: ${QNAP_CASE_PWMS:?Set QNAP_CASE_PWMS}
-      QNAP_FANS: ${QNAP_FANS:?Set QNAP_FANS}
-    depends_on:
-      load:
-        condition: service_completed_successfully
-    volumes:
-      - ${QNAP_SOURCE_DIR:?Set QNAP_SOURCE_DIR}:/source:ro
-      - /sys:/hostsys:ro
-      - /sys/devices/platform:/platform
-    tmpfs:
-      - /run:size=1m,mode=755
-    mem_limit: 128m
-    pids_limit: 32
-    stop_grace_period: 15s
-    healthcheck:
-      test: ["CMD", "python3", "-c", "import json,time; d=json.load(open('/run/fancontrol.json')); assert d['healthy'] and time.time()-d['updated'] < 45"]
-      interval: 30s
-      timeout: 5s
-      start_period: 45s
