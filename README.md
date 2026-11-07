@@ -3,6 +3,7 @@
 - [Installation Instructions](#installation-instructions)
   - [Install instructions using DKMS](#install-instructions-using-dkms)
   - [Installing on TrueNAS Scale](#installing-on-truenas-scale)
+    - [Container-based build, loading and cooling](#container-based-build-loading-and-cooling)
     - [Compiling using Kylian's Docker container](#compiling-using-kylians-docker-container)
     - [Install Procedure](#install-procedure)
     - [Uninstall procedure](#uninstall-procedure)
@@ -61,6 +62,14 @@ Before installing, please check the *Supported Models* table and see that your d
 ### Installing on TrueNAS Scale 
 
 > **❗Important**: Updates to the TrueNAS OS will overwrite any changes made during the installation of this module, requiring the installation process to be repeated.
+
+#### Container-based build, loading and cooling
+
+The [TrueNAS container example](examples/truenas/README.md) builds modules against
+the running host's headers and stores a verified build for each kernel version on
+a persistent dataset. It includes a loader and an optional temperature-based
+cooling example, tested on a TS-873A. Build tools run inside a container while the
+host operating system stays read-only.
 
 #### Compiling using Kylian's Docker container
 
