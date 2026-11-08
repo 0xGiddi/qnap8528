@@ -1046,6 +1046,48 @@ static int qnap8528_fan_pwm_bank(int fan)
 	return -1;
 }
 
+/*
+ * Mode register of each PWM bank. libuLinux_hal writes 0x10 to it before every
+ * duty write, as qnap8528_fan_pwm_set() does, and 0x80 for the EC's automatic
+ * mode; all of its EC-driven modes set bit 7, so pwmX_enable reads that bit.
+ */
+static const u16 qnap8528_fan_pwm_mode_regs[] = { 0x220, 0x223, 0x221, 0x222 };
+
+#define QNAP8528_FAN_PWM_MODE_HOST	0x10
+#define QNAP8528_FAN_PWM_MODE_EC_AUTO	0x80
+
+static int qnap8528_fan_pwm_enable_get(int fan)
+{
+	int bank = qnap8528_fan_pwm_bank(fan);
+	u8 value;
+	int ret;
+
+	if (bank < 0)
+		return -EINVAL;
+
+	ret = qnap8528_ec_read(qnap8528_fan_pwm_mode_regs[bank], &value);
+	if (ret)
+		return ret;
+	return (value & QNAP8528_FAN_PWM_MODE_EC_AUTO) ? 2 : 1;
+}
+
+static int qnap8528_fan_pwm_enable_set(int fan, long val)
+{
+	int bank = qnap8528_fan_pwm_bank(fan);
+
+	if (bank < 0)
+		return -EINVAL;
+
+	switch (val) {
+	case 1:
+		return qnap8528_ec_write(qnap8528_fan_pwm_mode_regs[bank], QNAP8528_FAN_PWM_MODE_HOST);
+	case 2:
+		return qnap8528_ec_write(qnap8528_fan_pwm_mode_regs[bank], QNAP8528_FAN_PWM_MODE_EC_AUTO);
+	default:
+		return -EINVAL;
+	}
+}
+
 static umode_t qnap8528_hwmon_is_visible(const void *data, enum hwmon_sensor_types type, u32 attr, int channel)
 {
 	u8 val;
@@ -1115,7 +1157,10 @@ static int qnap8528_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
 		*val = ret;
 		return 0;
 	case hwmon_pwm:
-		ret = qnap8528_fan_pwm_get(channel);
+		if (attr == hwmon_pwm_enable)
+			ret = qnap8528_fan_pwm_enable_get(channel);
+		else
+			ret = qnap8528_fan_pwm_get(channel);
 		if (ret < 0)
 			return ret;
 		*val = ret;
@@ -1126,11 +1171,32 @@ static int qnap8528_hwmon_read(struct device *dev, enum hwmon_sensor_types type,
 	return -ENOTSUPP;
 }
 
+/*
+ * A pwmX write is two EC writes (host mode, then duty); without this lock a
+ * pwmX_enable write could select EC control between them.
+ */
+static DEFINE_MUTEX(qnap8528_fan_pwm_lock);
+
 static int qnap8528_hwmon_write(struct device *dev, enum hwmon_sensor_types type, u32 attr, int channel, long val)
 {
-	if (type == hwmon_pwm)
-		return qnap8528_fan_pwm_set(channel, (val > 255) ? 255 : val);
-	return -ENOTSUPP;
+	int ret;
+
+	if (type != hwmon_pwm)
+		return -ENOTSUPP;
+
+	mutex_lock(&qnap8528_fan_pwm_lock);
+	switch (attr) {
+	case hwmon_pwm_input:
+		ret = qnap8528_fan_pwm_set(channel, (val > 255) ? 255 : val);
+		break;
+	case hwmon_pwm_enable:
+		ret = qnap8528_fan_pwm_enable_set(channel, val);
+		break;
+	default:
+		ret = -ENOTSUPP;
+	}
+	mutex_unlock(&qnap8528_fan_pwm_lock);
+	return ret;
 }
 
 static int qnap8528_register_hwmon(struct device *dev)
@@ -1141,7 +1207,7 @@ static int qnap8528_register_hwmon(struct device *dev)
 	for (i = 0; i < QNAP8528_HWMON_MAX_CHANNELS + 1; i++) {
 		qnap8528_hwmon_temp_config[i] = HWMON_T_INPUT;
 		qnap8528_hwmon_fan_config[i] = HWMON_F_INPUT;
-		qnap8528_hwmon_pwm_config[i] = HWMON_PWM_INPUT;
+		qnap8528_hwmon_pwm_config[i] = HWMON_PWM_INPUT | HWMON_PWM_ENABLE;
 	}
 
 	data->hwmon_dev = devm_hwmon_device_register_with_info(dev, DRVNAME, data, &qnap8528_hwmon_chip_info, NULL);
