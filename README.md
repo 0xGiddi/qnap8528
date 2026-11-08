@@ -220,14 +220,14 @@ Note 1: I'm not sure if this is the actual CPU temperatures on system what DO NO
 
 Fans inputs are registered according to device config and report their speed in RPM (under `/sys/class/hwmon/hwmonX/fanY_input`), fan control is done via PWM channels (under `/sys/class/hwmon/hwmonX/pwmX`),
 
-An unimportant side-note: The EC controls fans in groups (multiple fans will be effected by a change to a single PWM channel), there are 4 PWM channels and for each group, if a fan exists in that group, the PWM group will have the same index as the first fan that exists in that group, so for fan #7 (which is in the second group that controls fans #6 and #7) a pwm channel `pwm7` will be created if fan #6 does not exist.:
+An unimportant side-note: The EC controls fans in groups (multiple fans will be effected by a change to a single PWM channel). There are 4 PWM channels, one for each group that has a configured fan, and each channel has the same index as the lowest configured fan in its group. For example, if `fan8` is configured and `fan7` is not, the second group's channel is `pwm8`; if both are configured, it is `pwm7`:
 
 |PWM Group | Fans Controlled
 |-|-
-Group 1|Fans 0-5
-Group 2|Fans 6, 7
-Group 3|Fans 20-25
-Group 4|Fans 30-35
+Group 1|`fan1` - `fan6`
+Group 2|`fan7`, `fan8`
+Group 3|`fan21` - `fan26`
+Group 4|`fan31` - `fan36`
 
 **Why fans are no enumerated at runtime:** \
 I experimented with enumerating the fans at runtime by using a combination of checking the fan status in the fan status EC register, checking that the PWM values are between `0` and `255` and that the reported RPM is not a junk value (such as `65535` on my device), however, the RPM check is not enough and the junk value is not always a MAX_SHORT or something nice that can be detected. This method of enumeration also extends the module load. If this feature is requested it will not be hard to add, please create an issue requesting it.
