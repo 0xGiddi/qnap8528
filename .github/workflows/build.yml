@@ -1,0 +1,62 @@
+# Builds the module against each distribution's packaged kernel headers.
+name: Build
+
+# Pull requests run through pull_request only; push covers merges to master.
+on:
+  push:
+    branches: [master]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    name: ${{ matrix.name }}
+    runs-on: ubuntu-latest
+    container: ${{ matrix.image }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { name: Debian 12, image: "debian:bookworm" }
+          - { name: Debian 13, image: "debian:trixie" }
+          - { name: Ubuntu 24.04, image: "ubuntu:24.04" }
+          - { name: Ubuntu 26.04, image: "ubuntu:26.04" }
+          - { name: Arch Linux, image: "archlinux:latest" }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install compiler and kernel headers
+        run: |
+          case "${{ matrix.image }}" in
+          debian:*)
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential kmod linux-headers-amd64
+            ;;
+          ubuntu:*)
+            apt-get update
+            apt-get install -y --no-install-recommends build-essential kmod linux-headers-generic
+            ;;
+          archlinux:*)
+            # linux-lts-headers adds the current LTS series next to the latest stable
+            pacman -Syu --noconfirm --needed base-devel linux-headers linux-lts-headers
+            ;;
+          esac
+
+      # The container runs the runner's kernel, so build against every
+      # installed headers tree instead of the running one.
+      - name: Build
+        run: |
+          set -e
+          found=0
+          for kdir in /lib/modules/*/build; do
+            [ -d "$kdir" ] || continue
+            found=1
+            echo "::group::$(basename "$(dirname "$kdir")")"
+            make -C src KERNEL_DIR="$kdir"
+            modinfo -F vermagic src/qnap8528.ko
+            make -C src KERNEL_DIR="$kdir" clean
+            echo "::endgroup::"
+          done
+          [ "$found" = 1 ] || { echo "no kernel headers found under /lib/modules"; exit 1; }
