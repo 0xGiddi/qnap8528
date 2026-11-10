@@ -160,19 +160,23 @@ static struct platform_driver qnap8528_pdriver = {
 	.probe = qnap8528_probe
 };
 
-static u32 qnap8528_hwmon_temp_config[QNAP8528_HWMON_MAX_CHANNELS + 1] = {0};
+/*
+ * Channels 0 to QNAP8528_HWMON_MAX_CHANNELS, followed by the zero entry that
+ * ends each list for the hwmon core.
+ */
+static u32 qnap8528_hwmon_temp_config[QNAP8528_HWMON_MAX_CHANNELS + 2] = {0};
 static struct hwmon_channel_info qnap8528_hwmon_temp_chan_info = {
 	.type = hwmon_temp,
 	.config = qnap8528_hwmon_temp_config
 };
 
-static u32 qnap8528_hwmon_fan_config[QNAP8528_HWMON_MAX_CHANNELS + 1] = {0};
+static u32 qnap8528_hwmon_fan_config[QNAP8528_HWMON_MAX_CHANNELS + 2] = {0};
 static struct hwmon_channel_info qnap8528_hwmon_fan_chan_info = {
 	.type = hwmon_fan,
 	.config = qnap8528_hwmon_fan_config
 };
 
-static u32 qnap8528_hwmon_pwm_config[QNAP8528_HWMON_MAX_CHANNELS + 1] = {0};
+static u32 qnap8528_hwmon_pwm_config[QNAP8528_HWMON_MAX_CHANNELS + 2] = {0};
 static struct hwmon_channel_info qnap8528_hwmon_pwm_chan_info = {
 	.type = hwmon_pwm,
 	.config = qnap8528_hwmon_pwm_config
