@@ -1036,10 +1036,24 @@ static int qnap8528_register_inputs(struct device *dev)
 	return 0;
 }
 
+/* PWM bank of EC fan index @fan, matching the register groups in qnap8528_fan_pwm_set() */
+static int qnap8528_fan_pwm_bank(int fan)
+{
+	if (fan >= 0 && fan <= 5)
+		return 0;
+	if (fan == 6 || fan == 7)
+		return 1;
+	if (fan >= 0x14 && fan <= 0x19)
+		return 2;
+	if (fan >= 0x1e && fan <= 0x23)
+		return 3;
+	return -1;
+}
+
 static umode_t qnap8528_hwmon_is_visible(const void *data, enum hwmon_sensor_types type, u32 attr, int channel)
 {
 	u8 val;
-	int i;
+	int i, bank, fan, lowest;
 	umode_t mode = 0;
 	struct qnap8528_dev_data *dev_data = (struct qnap8528_dev_data *)data;
 
@@ -1059,45 +1073,27 @@ static umode_t qnap8528_hwmon_is_visible(const void *data, enum hwmon_sensor_typ
 		}
 		break;
 	case hwmon_pwm:
-		channel += 1;
 		if (!dev_data->config->fans)
 			break;
 
+		/*
+		 * The channel is the EC fan index and config entries are that index
+		 * plus one. Each bank gets one pwm attribute, on the channel of its
+		 * lowest configured fan. This is decided without state because the
+		 * hwmon core calls this once per attribute.
+		 */
+		bank = qnap8528_fan_pwm_bank(channel);
+		if (bank < 0)
+			break;
+
+		lowest = -1;
 		for (i = 0; dev_data->config->fans[i]; i++) {
-			if (dev_data->config->fans[i] == channel) {
-				if (channel >= 0 && channel <= 5) {
-					if (!dev_data->hm_pwm_channels[0]) {
-						dev_data->hm_pwm_channels[0] = true;
-						mode = 0644;
-						break;
-					}
-				}
-
-				if (channel == 6 || channel == 7) {
-					if (!dev_data->hm_pwm_channels[1]) {
-						dev_data->hm_pwm_channels[1] = true;
-						mode = 0644;
-						break;
-					}
-				}
-
-				if (channel >= 0x14 && channel <= 0x19) {
-					if (!dev_data->hm_pwm_channels[2]) {
-						dev_data->hm_pwm_channels[2] = true;
-						mode = 0644;
-						break;
-					}
-				}
-
-				if (channel >= 0x1e && channel <= 0x23) {
-					if (!dev_data->hm_pwm_channels[3]) {
-						dev_data->hm_pwm_channels[3] = true;
-						mode = 0644;
-						break;
-					}
-				}
-			}
+			fan = dev_data->config->fans[i] - 1;
+			if (qnap8528_fan_pwm_bank(fan) == bank && (lowest < 0 || fan < lowest))
+				lowest = fan;
 		}
+		if (lowest == channel)
+			mode = 0644;
 		break;
 	default:
 		;
@@ -1151,9 +1147,6 @@ static int qnap8528_register_hwmon(struct device *dev)
 		qnap8528_hwmon_fan_config[i] = HWMON_F_INPUT;
 		qnap8528_hwmon_pwm_config[i] = HWMON_PWM_INPUT;
 	}
-
-	for (i = 0; i < QNAP8528_HWMON_PWM_BANKS; i++)
-		data->hm_pwm_channels[i] = false;
 
 	data->hwmon_dev = devm_hwmon_device_register_with_info(dev, DRVNAME, data, &qnap8528_hwmon_chip_info, NULL);
 	if (IS_ERR(data->hwmon_dev))

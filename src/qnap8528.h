@@ -96,7 +96,6 @@
 #define EC_LED_DISK_ERROR_ON_REG    0x15c
 #define EC_LED_DISK_ERROR_OFF_REG   0x15d
 
-#define QNAP8528_HWMON_PWM_BANKS    4
 #define QNAP8528_HWMON_MAX_CHANNELS 38
 
 
@@ -207,7 +206,6 @@ struct qnap8528_system_led {
 
 struct qnap8528_dev_data {
 	struct qnap8528_config  *config;
-	bool hm_pwm_channels[QNAP8528_HWMON_PWM_BANKS];
 	/* Do I really need handles to all my devices?  */
 	struct input_dev	    *input_dev;
 	struct device           *hwmon_dev;
