@@ -15,6 +15,7 @@
  *	- Expose CPLD version
  *	- Read fan speeds in RPM
  *	- Read/write fan PWM
+ *	- Switch fan control between host and EC
  *	- Read various temperature sensors
  *	- Read hardware buttons
  *	- Expose various LEDs
@@ -54,6 +55,9 @@
  *  v1.25: Fix vpd_bp_table and VPD logic to support table > 1
  *  v1.26: Added TS-551 config
  *  v1.27: Changed strncpy to strscpy for kernels > 7.2
+ *  v1.28: Fixed hwmon channel config arrays missing zero terminator (by mafredri)
+ *         Changed pwm channels to expose one per fan bank based on EC fan index (by mafredri)
+ *         Added pwmX_enable to switch between host and EC fan control (by mafredri)
  */
 
 #include <linux/delay.h>
@@ -1373,7 +1377,7 @@ qnap8528_init_ret:
 
 MODULE_AUTHOR("0xGiddi <qnap8528@giddi.net>");
 MODULE_DESCRIPTION("QNAP IT8528 EC driver");
-MODULE_VERSION("1.27");
+MODULE_VERSION("1.28");
 MODULE_LICENSE("GPL");
 
 module_init(qnap8528_init);
