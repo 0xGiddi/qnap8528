@@ -220,6 +220,8 @@ Note 1: I'm not sure if this is the actual CPU temperatures on system what DO NO
 
 Fans inputs are registered according to device config and report their speed in RPM (under `/sys/class/hwmon/hwmonX/fanY_input`), fan control is done via PWM channels (under `/sys/class/hwmon/hwmonX/pwmX`),
 
+Each PWM channel also has a `pwmX_enable` attribute. It reads `1` while the host sets the duty through `pwmX`, and `2` while the EC controls the group in any of QNAP's EC modes (automatic, preset level or custom). Writing `1` selects host control, as any write to `pwmX` does. Writing `2` selects the EC's automatic mode; it does not restore an earlier preset or custom mode.
+
 An unimportant side-note: The EC controls fans in groups (multiple fans will be effected by a change to a single PWM channel). There are 4 PWM channels, one for each group that has a configured fan, and each channel has the same index as the lowest configured fan in its group. For example, if `fan8` is configured and `fan7` is not, the second group's channel is `pwm8`; if both are configured, it is `pwm7`:
 
 |PWM Group | Fans Controlled
