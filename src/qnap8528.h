@@ -3916,6 +3916,29 @@ static struct qnap8528_config qnap8528_configs[] = {
             { NULL }
         }
     },
+    {
+        "QU805", "SA1450", "SB1370",
+        {
+            .led_brightness = 1,
+            .led_status     = 1,
+            .led_usb        = 1,
+            .vpd_bp_table   = 3,
+        },
+        .fans = (u8[]){ 1, 2, 0},
+        .slots = (struct qnap8528_slot_config[]){
+            { .name = "m2ssd1", .ec_index = 1,  .has_present = 1, .has_active = 1, .has_error = 1, .has_locate = 1},
+            { .name = "m2ssd2", .ec_index = 2,  .has_present = 1, .has_active = 1, .has_error = 1, .has_locate = 1},
+            { .name = "hdd1",   .ec_index = 3,  .has_present = 1, .has_active = 1, .has_error = 1, .has_locate = 1},
+            { .name = "hdd2",   .ec_index = 4,  .has_present = 1, .has_active = 1, .has_error = 1, .has_locate = 1},
+            { .name = "hdd3",   .ec_index = 5,  .has_error = 1, .has_locate = 1},
+            { .name = "hdd4",   .ec_index = 6,  .has_error = 1, .has_locate = 1},
+            { .name = "hdd5",   .ec_index = 7,  .has_error = 1, .has_locate = 1},
+            { .name = "hdd6",   .ec_index = 8,  .has_error = 1, .has_locate = 1},
+            { .name = "hdd7",   .ec_index = 9,  .has_error = 1, .has_locate = 1},
+            { .name = "hdd8",   .ec_index = 10, .has_error = 1, .has_locate = 1},
+            { NULL }
+        }
+    },
 	{
         "QU605", "SA1450", "SB1360",
         {
